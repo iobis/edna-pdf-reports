@@ -50,6 +50,13 @@ library(phylobase)
 library(jsonlite)
 library(glue)
 options(dplyr.summarise.inform = FALSE)
+
+table_environment <- "longtable"
+
+image_filename <- glue("images/{params$site_name_simplified}.jpg")
+if (!file.exists(image_filename)) {
+  image_filename <- "images/placeholder.jpg"
+}
 ```
 
 ```{r species, echo=FALSE}
@@ -62,12 +69,12 @@ sample_stats <- json$stats$samples %>%
 sample_stats_x <- xtable(sample_stats, type = "latex")
 caption(sample_stats_x) <- "\\label{tab:samples}Reads, ASVs, and species by sample."
 label(sample_stats_x) <- "table:samples"
-print(sample_stats_x, file = "sample_stats.tex", include.rownames = FALSE, tabular.environment = "longtable", floating = FALSE)
+print(sample_stats_x, file = "sample_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
 
 stats_x <- xtable(as.data.frame(json$stats$dna), type = "latex")
 caption(stats_x) <- "\\label{tab:dna}Reads, ASVs, and species across all samples."
 label(stats_x) <- "table:stats"
-print(stats_x, file = "stats.tex", include.rownames = FALSE, tabular.environment = "longtable", floating = FALSE)
+print(stats_x, file = "stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
 
 # output species list
 
@@ -121,7 +128,7 @@ found_percentage <- round(sum(group_stats$`eDNA species`) / sum(group_stats$`tot
 group_stats_x <- xtable(group_stats, type = "latex")
 caption(group_stats_x) <- "\\label{tab:groups}Number of species in the three target groups, from the OBIS database and from eDNA sampling."
 label(group_stats_x) <- "table:groups"
-print(group_stats_x, file = "group_stats.tex", include.rownames = FALSE, tabular.environment = "longtable", floating = FALSE)
+print(group_stats_x, file = "group_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
 
 # output threatened statistics
 
@@ -133,7 +140,7 @@ redlist_stats <- json_full$stats$redlist %>%
 category_stats_x <- xtable(redlist_stats, type = "latex")
 caption(category_stats_x) <- "\\label{tab:categories}Number of species by IUCN Red List category, from the OBIS database and from eDNA sampling."
 label(category_stats_x) <- "table:categories"
-print(category_stats_x, file = "category_stats.tex", include.rownames = FALSE, tabular.environment = "longtable", floating = FALSE)
+print(category_stats_x, file = "category_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
 
 # taxonomic tree
 
@@ -161,15 +168,25 @@ writeLines(nwk, "tree.nwk")
 tree <- read.tree("tree.nwk")
 ```
 
+\begin{figure}[h]
+ 	\centering
+ 	\makebox[\textwidth]{\includegraphics[width=\paperwidth]{`r image_filename`}}
+ 	\caption*{`r params$photo_credit`}
+\end{figure}
+
+\clearpage
+
+## About eDNA Expeditions
+
 UNESCO's eDNA Expeditions is a global, citizen science initiative that is conducted with the intention to measure marine biodiversity and predict the impact climate change on marine community composition across UNESCO World Heritage marine sites. 
 
-eDNA is a cost effective and minimally invasive method to measure biodiversity in any given area. Marine species continuously shed DNA into the water around them in the form of waste, mucus, or cells. By collecting this DNA from water samples, and subsequently amplifying and sequencing specific regions within these DNA strands, experts can detect a wide variety of species without removing any organisms from their environment. The amplified regions are selected depending on the scope of the study: while some markers are suitable to obtain a broad overview of biodiversity across many groups of species, other markers are particularly suited to get high resolution insight for a more specific taxonomic group. The UNESCO eDNA Expeditions initiative combines a number of markers tailored for marine vertebrates (fish, mammals, and turtles). A general marker was added to allow to detect also species from other groups such as invertebrates which can give a broader insight in the marine species diversity in a given area.
+eDNA is a cost effective and minimally invasive method to measure biodiversity in any given area. Marine species continuously shed DNA into the water around them in the form of waste, mucus, or cells. By extracting this DNA from water samples, and subsequently multiplying and sequencing specific regions within these DNA strands, a wide variety of species can be detected without removing any organisms from their environment. The regions in the DNA targeted for sequencing are selected depending on the scope of the study: while some markers are suitable to obtain a broad overview of biodiversity across many groups of species, other markers are particularly suited to get high resolution insight for a more specific taxonomic group such as fish. The UNESCO eDNA Expeditions initiative combines a number of markers tailored for marine vertebrates (fish, mammals, and turtles). A general marker was added to also allow detection of species from other groups such as invertebrates, which can give a broader insight in the marine species diversity in a given area.
 
 Between September 2022 and May 2023, UNESCO organized eDNA sampling campaigns in 21 marine World Heritage sites across 17 countries around the world. At every World Heritage site, about 20 samples were collected from different habitats. Over 250 young people participated in the local sampling expeditions. They were guided by local experts and park management staff, using protocols and eDNA sampling equipment provided by UNESCO. 
 
 Biodiversity inventories generated from the samples are being combined with existing species distribution data from public biodiversity databases such as the Ocean Biodiversity Information System (OBIS) in view of obtaining a comprehensive overview of marine life across marine World Heritage sites. Through the use of climate scenarios and species distribution models, an estimate will be made of the impact of climate change, in particular rising temperatures, on local biodiversity and its potential future distribution patterns.
 
-More information about the initiative is available on the UNESCO website: https://www.unesco.org/en/edna-expeditions.
+More information about the initiative and a press kit are available on the UNESCO website: https://www.unesco.org/en/edna-expeditions.
 
 \clearpage
 
@@ -177,7 +194,7 @@ More information about the initiative is available on the UNESCO website: https:
 
 ## Sampling and sample processing
 
-eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r params$site_num_samples` samples were collected at `r length(na.omit(unique(json$stats$samples$locality)))` locations in the park: `r knitr::combine_words(na.omit(unique(json$stats$samples$locality)))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. From the `r params$site_num_samples` samples, `r length(na.omit(json$stats$samples$locality))` have now (December 2023) been processed. A second batch of samples will be processed in January 2024. DNA from these samples was extracted and amplified, and then sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles. The results in this preliminary report are based on a first batch of `r length(na.omit(json$stats$samples$locality))` samples that were analyzed covering all locations that were sampled in the World Heritage site. 
+eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r params$site_num_samples` samples were collected at `r length(na.omit(unique(json$stats$samples$locality)))` locations in the park covering different habitats: `r knitr::combine_words(na.omit(unique(json$stats$samples$locality)))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. From the `r params$site_num_samples` samples, `r length(na.omit(json$stats$samples$locality))` have now (December 2023) been processed. A second batch of samples will be processed by January 2024. DNA from these samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles. The results in this preliminary report are based on a first batch of `r length(na.omit(json$stats$samples$locality))` samples that were analyzed covering all locations that were sampled in the World Heritage site. 
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=7, fig.scale=1.2, echo=FALSE, out.width='70%', fig.cap='\\label{fig:map}Map of the sampling locations.', fig.align='center'}
 shapes <- sf::read_sf("marine_world_heritage.gpkg")
@@ -201,12 +218,11 @@ ggplot() +
 
 ```{r include=FALSE}
 groups <- names(json$stats$groups_edna)[order(t(data.frame(json$stats$groups)), decreasing = TRUE)]
-possible_groups <- c("molluscs", "worms", "algae", "jellyfish", "sponges", "crustaceans", "starfish", "copepods")
+possible_groups <- c("molluscs", "worms", "algae", "cnidarians", "sponges", "crustaceans", "echinoderms", "copepods")
 example_groups <- groups[groups %in% possible_groups][1:5]
 ```
 
-Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads (Table \ref{tab:samples}), from which we collected `r format(json$stats$dna$asvs, big.mark = ",")` unique sequences or ASVs. By matching those sequences with reference sequences in public databases, we were able to detect `r nrow(json$species)` species. Most of these species are vertebrates, but also species from other groups were detected, including `r knitr::combine_words(example_groups)` (Figure \ref{fig:tree}). Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. 
-
+Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads (Table \ref{tab:samples}), from which we collected `r format(json$stats$dna$asvs, big.mark = ",")` unique sequences or ASVs. 
 \input{stats.tex}
 
 \input{sample_stats.tex}
@@ -223,7 +239,7 @@ ggtree(tree, layout = "circular") +
   theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom", legend.box = "vertical")
 ```
 
-```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=9, fig.scale=1.2, echo=FALSE, fig.cap='\\label{fig:groups}Distribution of detected species across groups.', fig.align='center', out.width='40%'}
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=9, fig.scale=1.2, echo=FALSE, fig.cap='\\label{fig:groups}Distribution of detected species across groups.', fig.align='center', out.width='50%'}
 webr::PieDonut(json$species, aes(group, label = group), r0 = 0.6, r1 = 1, labelpositionThreshold = 1, showRatioThreshold = 1, showPieName = FALSE, use.label = TRUE) +
   scale_fill_manual(values = hcl.colors(length(unique(group_stats_all$group)), "Zissou 1")) +
   theme(plot.margin = unit(c(-2, 1, -2, 1), "cm")) +
@@ -232,7 +248,9 @@ webr::PieDonut(json$species, aes(group, label = group), r0 = 0.6, r1 = 1, labelp
 
 ## Species identification
 
-The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, of which `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). This represents about `r found_percentage`% of the species known from `r params$site_higherGeography` in the OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
+The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, including `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). Species from other groups, such as `r knitr::combine_words(example_groups)`, were also detected (Figure \ref{fig:tree}). This number of species detected represents about `r found_percentage`% of the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species known from `r params$site_higherGeography` in the OBIS database. Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}).
+
+A full list of species is added at the end of this report.
 
 \input{group_stats.tex}
 \input{category_stats.tex}
