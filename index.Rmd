@@ -110,7 +110,8 @@ group_stats_all <- groups_combined %>%
   left_join(groups_edna, by = "group") %>%
   mutate(fraction = round(species_edna / species, 2)) %>%
   select(group, species_edna, species, fraction) %>%
-  setNames(c("group", "eDNA species", "total species", "fraction"))
+  setNames(c("group", "eDNA species", "total species", "fraction")) %>%
+  mutate_all(~replace(., is.na(.), 0))
 
 group_stats <- group_stats_all %>%
   filter(group %in% c("fish", "mammals", "turtles"))
