@@ -13,6 +13,7 @@ header-includes:
   \usepackage{subcaption}
   \usepackage{pdflscape}
   \usepackage{siunitx}
+  \sisetup{group-separator = {,}, group-minimum-digits = 4}
   \usepackage[utf8]{inputenc}
 ---
 
@@ -27,7 +28,7 @@ title: |
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(dpi=300)
+knitr::opts_chunk$set(dpi = 300)
 library(knitr)
 library(kableExtra)
 library(lessR)
@@ -203,13 +204,13 @@ possible_groups <- c("molluscs", "worms", "algae", "jellyfish", "sponges", "crus
 example_groups <- groups[groups %in% possible_groups][1:5]
 ```
 
-Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads (Table \ref{tab:samples}), from which we collected `r json$stats$dna$asvs` unique sequences or ASVs. By matching those sequences with reference sequences in public databases, we were able to detect `r nrow(json$species)` species. Most of these species are vertebrates, but also species from other groups were detected, including `r knitr::combine_words(example_groups)` (Figure \ref{fig:tree}). Of the `r nrow(json$species)` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the `r sum(json_full$species$source_gbif | json_full$species$source_obis)` species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. 
+Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads (Table \ref{tab:samples}), from which we collected `r format(json$stats$dna$asvs, big.mark = ",")` unique sequences or ASVs. By matching those sequences with reference sequences in public databases, we were able to detect `r nrow(json$species)` species. Most of these species are vertebrates, but also species from other groups were detected, including `r knitr::combine_words(example_groups)` (Figure \ref{fig:tree}). Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. 
 
 \input{stats.tex}
 
 \input{sample_stats.tex}
 
-```{r message=FALSE, warning=FALSE, fig.pos='p', fig.width=10, fig.height=9, fig.scale=1.2, echo=FALSE, fig.cap='\\label{fig:tree}Number of DNA reads (bubbles) and species detected (bars) by family.', fig.align='center'}
+```{r message=FALSE, warning=FALSE, fig.pos='p', fig.width=10, fig.height=12, fig.scale=1.3, echo=FALSE, fig.cap='\\label{fig:tree}Number of DNA reads (bubbles) and species detected (bars) by family.', fig.align='center'}
 ggtree(tree, layout = "circular") +
   geom_nodepoint() +
   geom_fruit(data = df_subset %>% filter(!is.na(family)), aes(x = species, y = family, fill = phylum), geom = geom_bar, stat = "identity") +
@@ -217,8 +218,8 @@ ggtree(tree, layout = "circular") +
   geom_tiplab(size = 3, offset = 60) +
   scale_fill_brewer(palette = "Spectral") +
   scale_color_brewer(palette = "Paired") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  guides(color = guide_legend(title = "marker"))
+  guides(color = guide_legend(title = "marker")) +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom", legend.box = "vertical")
 ```
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=9, fig.scale=1.2, echo=FALSE, fig.cap='\\label{fig:groups}Distribution of detected species across groups.', fig.align='center', out.width='40%'}
@@ -230,7 +231,7 @@ webr::PieDonut(json$species, aes(group, label = group), r0 = 0.6, r1 = 1, labelp
 
 ## Species identification
 
-The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r nrow(json$species)` species, of which `r sum(na.omit(json$species$group == "fish"))` fish species, `r sum(na.omit(json$species$group == "mammals"))` mammalian species, and `r sum(na.omit(json$species$group == "mammals"))` turtle species (Table \ref{tab:groups}). This represents about `r found_percentage`% of the species known from `r params$site_higherGeography` in the OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
+The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, of which `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). This represents about `r found_percentage`% of the species known from `r params$site_higherGeography` in the OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
 
 \input{group_stats.tex}
 \input{category_stats.tex}
