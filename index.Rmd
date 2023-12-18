@@ -51,7 +51,7 @@ library(jsonlite)
 library(glue)
 options(dplyr.summarise.inform = FALSE)
 
-table_environment <- "longtable"
+table_environment <- "tabular"
 
 image_filename <- glue("images/{params$site_name_simplified}.jpg")
 if (!file.exists(image_filename)) {
@@ -66,15 +66,15 @@ json_full <- fromJSON(glue("edna-species-lists/lists_full/json/{params$site_name
 sample_stats <- json$stats$samples %>%
   filter(!is.na(locality)) %>%
   select(locality, materialSampleID, sampleSize, reads, asvs, species)
-sample_stats_x <- xtable(sample_stats, type = "latex")
-caption(sample_stats_x) <- "\\label{tab:samples}Reads, ASVs, and species by sample."
-label(sample_stats_x) <- "table:samples"
-print(sample_stats_x, file = "sample_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
+sample_stats_x <- xtable(sample_stats, caption = "Reads, ASVs, and species by sample.", label = "tab:samples")
+# caption(sample_stats_x) <- "\\label{tab:samples}Reads, ASVs, and species by sample."
+# label(sample_stats_x) <- "table:samples"
+print(sample_stats_x, file = "sample_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = TRUE)
 
-stats_x <- xtable(as.data.frame(json$stats$dna), type = "latex")
-caption(stats_x) <- "\\label{tab:dna}Reads, ASVs, and species across all samples."
-label(stats_x) <- "table:stats"
-print(stats_x, file = "stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
+stats_x <- xtable(as.data.frame(json$stats$dna), type = "latex", label = "tab:dna", caption = "Reads, ASVs, and species across all samples.")
+# caption(stats_x) <- "\\label{tab:dna}Reads, ASVs, and species across all samples."
+# label(stats_x) <- "table:stats"
+print(stats_x, file = "stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = TRUE)
 
 # output species list
 
@@ -125,10 +125,10 @@ group_stats <- group_stats_all %>%
 
 found_percentage <- round(sum(group_stats$`eDNA species`) / sum(group_stats$`total species`) * 100)
 
-group_stats_x <- xtable(group_stats, type = "latex")
-caption(group_stats_x) <- "\\label{tab:groups}Number of species in the three target groups, from the OBIS database and from eDNA sampling."
-label(group_stats_x) <- "table:groups"
-print(group_stats_x, file = "group_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
+group_stats_x <- xtable(group_stats, type = "latex", label = "tab:groups", caption = "Number of species in the three target groups, from the OBIS database and from eDNA sampling.")
+# caption(group_stats_x) <- "\\label{tab:groups}Number of species in the three target groups, from the OBIS database and from eDNA sampling."
+# label(group_stats_x) <- "table:groups"
+print(group_stats_x, file = "group_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = TRUE)
 
 # output threatened statistics
 
@@ -138,10 +138,10 @@ redlist_stats <- json_full$stats$redlist %>%
   setNames(c("category", "eDNA species", "total species", "fraction")) %>%
   mutate_if(is.integer, ~replace(., is.na(.), as.integer(0)))
 
-category_stats_x <- xtable(redlist_stats, type = "latex")
-caption(category_stats_x) <- "\\label{tab:categories}Number of species by IUCN Red List category, from the OBIS database and from eDNA sampling."
-label(category_stats_x) <- "table:categories"
-print(category_stats_x, file = "category_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = FALSE)
+category_stats_x <- xtable(redlist_stats, type = "latex", label = "tab:categories", caption = "Number of species by IUCN Red List category, from the OBIS database and from eDNA sampling.")
+# caption(category_stats_x) <- "\\label{tab:categories}Number of species by IUCN Red List category, from the OBIS database and from eDNA sampling."
+# label(category_stats_x) <- "table:categories"
+print(category_stats_x, file = "category_stats.tex", include.rownames = FALSE, tabular.environment = table_environment, floating = TRUE)
 
 # taxonomic tree
 
@@ -207,10 +207,24 @@ stations <- json$stats$samples %>%
   distinct() %>%
   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
 
+bbox <- st_bbox(shape %>% st_transform(4326))
+min_ratio <- 2
+ratio <- (bbox$xmax - bbox$xmin) / (bbox$ymax - bbox$ymin)
+factor <- min_ratio / ratio
+xdelta <- bbox$xmax - bbox$xmin
+if (ratio < min_ratio) {
+  bbox$xmax <- as.numeric(bbox$xmax + xdelta / 2 * factor)
+  bbox$xmin <- as.numeric(bbox$xmin - xdelta / 2 * factor)
+  dummy <- st_as_sfc(st_bbox(c(xmin = bbox$xmin, xmax = bbox$xmax, ymax = bbox$ymax, ymin = bbox$ymin), crs = st_crs(4326)))
+} else {
+  dummy <- st_as_sfc(bbox)
+}
+
 ggplot() +
   geom_sf(data = shape %>% st_transform(4326), fill = NA, color = alpha("#237d2a", 0.5), lwd = 2) +
+  geom_sf(data = dummy, fill = NA, color = NA) +
   geom_point(data = stations, aes(decimalLongitude, decimalLatitude), color = "#e3007d", shape = 21, stroke = 2, size = 3) +
-  geom_text_repel(data = stations, aes(decimalLongitude, decimalLatitude, label = locality), size = 5, box.padding = 2, point.padding = 1, force_pull = 0.1) +
+  geom_text_repel(data = stations, aes(decimalLongitude, decimalLatitude, label = locality), size = 5, box.padding = 0.5, point.padding = 1, force_pull = 0.1) +
   landr::geom_landr(after = 0, fill = "#f2f2f2") +
   theme_void()
 ```
@@ -228,6 +242,13 @@ Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samp
 \input{stats.tex}
 
 \input{sample_stats.tex}
+
+## Species identification
+
+The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, including `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). Species from other groups, such as `r knitr::combine_words(example_groups)`, were also detected (Figures \ref{fig:tree} and \ref{fig:groups}). This number of species detected represents about `r found_percentage`% of the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species known from `r params$site_higherGeography` in the OBIS database. Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
+
+\input{group_stats.tex}
+\input{category_stats.tex}
 
 ```{r message=FALSE, warning=FALSE, fig.pos='p', fig.width=10, fig.height=12, fig.scale=1.3, echo=FALSE, fig.cap='\\label{fig:tree}Number of DNA reads (bubbles) and species detected (bars) by family.', fig.align='center'}
 ggtree(tree, layout = "circular") +
@@ -247,13 +268,6 @@ webr::PieDonut(json$species, aes(group, label = group), r0 = 0.6, r1 = 1, labelp
   theme(plot.margin = unit(c(-2, 1, -2, 1), "cm")) +
   theme(panel.border = element_blank())
 ```
-
-## Species identification
-
-The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, including `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). Species from other groups, such as `r knitr::combine_words(example_groups)`, were also detected (Figures \ref{fig:tree} and \ref{fig:groups}). This number of species detected represents about `r found_percentage`% of the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species known from `r params$site_higherGeography` in the OBIS database. Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
-
-\input{group_stats.tex}
-\input{category_stats.tex}
 
 \clearpage
 
