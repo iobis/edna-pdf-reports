@@ -1,5 +1,7 @@
 ---
-output: pdf_document
+output:
+  pdf_document:
+    keep_tex: false
 fontsize: 10pt
 fig_caption: yes
 editor_options: 
@@ -13,6 +15,7 @@ header-includes:
   \usepackage{subcaption}
   \usepackage{pdflscape}
   \usepackage{siunitx}
+  \usepackage{adjustbox}
   \sisetup{group-separator = {,}, group-minimum-digits = 4}
   \usepackage[utf8]{inputenc}
 ---
@@ -55,7 +58,7 @@ table_environment <- "tabular"
 
 image_filename <- glue("images/{params$site_name_simplified}.jpg")
 if (!file.exists(image_filename)) {
-  image_filename <- "images/placeholder.jpg"
+  image_filename <- "images/placeholder.png"
 }
 ```
 
@@ -171,8 +174,10 @@ tree <- read.tree("tree.nwk")
 
 \begin{figure}[h]
  	\centering
- 	\makebox[\textwidth]{\includegraphics[width=\paperwidth]{`r image_filename`}}
- 	\caption*{`r params$photo_credit`}
+ 	\makebox[\textwidth]{
+ 	  \adjustimage{min width=\paperwidth}{`r image_filename`}
+ 	}
+  \caption*{`r params$photo_credit`}
 \end{figure}
 
 \clearpage

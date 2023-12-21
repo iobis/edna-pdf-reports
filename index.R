@@ -40,7 +40,7 @@ site_higherGeography <- "Archipiélago de Revillagigedo"
 site_name_simplified <- "archipielago_de_revillagigedo"
 site_dates <- "April 2023"
 site_num_samples <- "20"
-photo_credit <- "Credit: xxx"
+photo_credit <- ""
 render_report()
 
 # Banc d'Arguin National Park
@@ -76,7 +76,7 @@ site_higherGeography <- "French Austral Lands and Seas"
 site_name_simplified <- "french_austral_lands_and_seas"
 site_dates <- "December 2022"
 site_num_samples <- "20"
-photo_credit <- "Credit: xxx"
+photo_credit <- "Credit: Sébastien Motreuil, IPEV"
 render_report()
 
 # Lagoons of New Caledonia: Reef Diversity and Associated Ecosystems
@@ -85,7 +85,7 @@ site_higherGeography <- "Lagoons of New Caledonia: Reef Diversity and Associated
 site_name_simplified <- "lagoons_of_new_caledonia_reef_diversity_and_associated_ecosystems"
 site_dates <- "March and April 2023"
 site_num_samples <- "20"
-photo_credit <- "Credit: xxx"
+photo_credit <- "Credit: Christine Fort - DAFE"
 render_report()
 
 # Lord Howe Island Group
@@ -94,6 +94,5 @@ site_higherGeography <- "Lord Howe Island Group"
 site_name_simplified <- "lord_howe_island_group"
 site_dates <- "December 2022 to February 2023"
 site_num_samples <- "20"
-photo_credit <- "Credit: xxx"
+photo_credit <- "Credit: Justin Gilligan"
 render_report()
-
