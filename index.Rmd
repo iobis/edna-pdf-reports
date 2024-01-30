@@ -26,7 +26,7 @@ title: |
     | 
     | Biodiversity survey for `r params$site_higherGeography`
     | 
-    | \textcolor{red}{Interim Results Based on 50\% of Samples Analyzed}
+    | \textcolor{red}{Interim Results}
     | \textcolor{red}{Not for public distribution}
 ---
 
@@ -170,6 +170,13 @@ paths <- df_subset %>%
 nwk <- ToNewick(as.Node(paths, pathName = "path", mode = "table", pathDelimiter = ";"))
 writeLines(nwk, "tree.nwk")
 tree <- read.tree("tree.nwk")
+
+stations <- json$stats$samples %>%
+  filter(!is.na(decimalLongitude)) %>%
+  mutate(decimalLongitude = round(decimalLongitude, 2), decimalLatitude = round(decimalLatitude, 2)) %>%
+  select(decimalLongitude, decimalLatitude, locality, locationID) %>%
+  distinct() %>%
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
 ```
 
 \begin{figure}[h]
@@ -200,17 +207,11 @@ More information about the initiative and a press kit are available on the UNESC
 
 ## Sampling and sample processing
 
-eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r params$site_num_samples` samples were collected at `r length(na.omit(unique(json$stats$samples$locality)))` locations in the park covering different habitats: `r knitr::combine_words(na.omit(unique(json$stats$samples$locality)))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. From the `r params$site_num_samples` samples, `r length(na.omit(json$stats$samples$locality))` have now (December 2023) been processed. A second batch of samples will be processed by January 2024. DNA from these samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles. The results in this preliminary report are based on a first batch of `r length(na.omit(json$stats$samples$locality))` samples that were analyzed covering all locations that were sampled in the World Heritage site. 
+eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r length(na.omit(json$stats$samples$locality))` samples were collected at `r nrow(stations)` locations in the park covering different habitats: `r knitr::combine_words(na.omit(unique(json$stats$samples$locationID)))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. DNA from the samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles.
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=7, fig.scale=1.2, echo=FALSE, out.width='70%', fig.cap='\\label{fig:map}Map of the sampling locations.', fig.align='center'}
 shapes <- sf::read_sf("marine_world_heritage.gpkg")
 shape <- shapes %>% filter(name == params$site_higherGeography)
-
-stations <- json$stats$samples %>%
-  filter(!is.na(decimalLongitude)) %>%
-  select(decimalLongitude, decimalLatitude, locality) %>%
-  distinct() %>%
-  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
 
 bbox <- st_bbox(shape %>% st_transform(4326))
 min_ratio <- 2
@@ -229,7 +230,7 @@ ggplot() +
   geom_sf(data = shape %>% st_transform(4326), fill = NA, color = alpha("#237d2a", 0.5), lwd = 2) +
   geom_sf(data = dummy, fill = NA, color = NA) +
   geom_point(data = stations, aes(decimalLongitude, decimalLatitude), color = "#e3007d", shape = 21, stroke = 2, size = 3) +
-  geom_text_repel(data = stations, aes(decimalLongitude, decimalLatitude, label = locality), size = 5, box.padding = 0.5, point.padding = 1, force_pull = 0.1) +
+  geom_text_repel(data = stations, aes(decimalLongitude, decimalLatitude, label = locationID), size = 5, box.padding = 0.5, point.padding = 1, force_pull = 0.1) +
   landr::geom_landr(after = 0, fill = "#f2f2f2") +
   theme_void()
 ```
