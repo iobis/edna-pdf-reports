@@ -112,4 +112,12 @@ site_dates <- "March and April 2023"
 photo_credit <- "Credit: Christelle Alix"
 render_report()
 
+# isimangaliso
+# ningaloo
+# peninsula
+# shark bay
+# socotra
+# sundarbans
+# tubbataha
+# wadden sea
 
