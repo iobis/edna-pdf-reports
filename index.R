@@ -133,15 +133,15 @@ render_report()
 site_higherGeography <- "Península Valdés"
 site_name_simplified <- "peninsula_valdes"
 site_dates <- "July 2023"
-photo_credit <- "Credit: Fundación Patagonia Natural."
+photo_credit <- ""
 render_report()
 
-# Shark Bay (NOT WORKING! FIX CREDIT!)
+# Shark Bay
 
 site_higherGeography <- "Shark Bay, Western Australia"
 site_name_simplified <- "shark_bay_western_australia"
 site_dates <- "October 2022"
-photo_credit <- "Credit: Shark Bay World Heritage Discovery and Visitor Centre."
+photo_credit <- "Credit: UNESCO / Geo Media Interactive."
 render_report()
 
 # Socotra Archipelago
