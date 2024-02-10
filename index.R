@@ -112,12 +112,66 @@ site_dates <- "March and April 2023"
 photo_credit <- "Credit: Christelle Alix"
 render_report()
 
-# isimangaliso
-# ningaloo
-# peninsula
-# shark bay
-# socotra
-# sundarbans
-# tubbataha
-# wadden sea
+# iSimangaliso Wetland Park (NO BLANKS?)
 
+site_higherGeography <- "iSimangaliso Wetland Park"
+site_name_simplified <- "isimangaliso_wetland_park"
+site_dates <- "April 2023"
+photo_credit <- "Credit: iSimangaliso Wetland Park Authority."
+render_report()
+
+# Ningaloo Coast
+
+site_higherGeography <- "Ningaloo Coast"
+site_name_simplified <- "ningaloo_coast"
+site_dates <- "May 2023"
+photo_credit <- "Credit: Department of Biodiversity, Conservation and Attractions."
+render_report()
+
+# Peninsula Valdès (FIX CREDIT!)
+
+site_higherGeography <- "Península Valdés"
+site_name_simplified <- "peninsula_valdes"
+site_dates <- "July 2023"
+photo_credit <- "Credit: Fundación Patagonia Natural."
+render_report()
+
+# Shark Bay (NOT WORKING! FIX CREDIT!)
+
+site_higherGeography <- "Shark Bay, Western Australia"
+site_name_simplified <- "shark_bay_western_australia"
+site_dates <- "October 2022"
+photo_credit <- "Credit: Shark Bay World Heritage Discovery and Visitor Centre."
+render_report()
+
+# Socotra Archipelago
+
+site_higherGeography <- "Socotra Archipelago"
+site_name_simplified <- "socotra_archipelago"
+site_dates <- "June and July 2023"
+photo_credit <- "Credit: Salem Hawash A; Abdulwahab Saad A.; Ahmed Saeed S.; Fouad Naseeb KH.; Mazen Saeed S."
+render_report()
+
+# The Sundarbans
+
+site_higherGeography <- "The Sundarbans"
+site_name_simplified <- "the_sundarbans"
+site_dates <- "January 2023"
+photo_credit <- "Credit: Sher-e-Bangla Agricultural University."
+render_report()
+
+# Tubbataha Reefs Natural Park
+
+site_higherGeography <- "Tubbataha Reefs Natural Park"
+site_name_simplified <- "tubbataha_reefs_natural_park"
+site_dates <- "April 2023"
+photo_credit <- "Credit: Asia Wy."
+render_report()
+
+# Wadden Sea
+
+site_higherGeography <- "Wadden Sea"
+site_name_simplified <- "wadden_sea"
+site_dates <- "September 2022 to April 2023"
+photo_credit <- "Credit: Silke Ahlborn/LKN.SH."
+render_report()

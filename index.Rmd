@@ -171,12 +171,19 @@ nwk <- ToNewick(as.Node(paths, pathName = "path", mode = "table", pathDelimiter 
 writeLines(nwk, "tree.nwk")
 tree <- read.tree("tree.nwk")
 
+# stations <- json$stats$samples %>%
+#   filter(!is.na(decimalLongitude)) %>%
+#   mutate(decimalLongitude = round(decimalLongitude, 2), decimalLatitude = round(decimalLatitude, 2)) %>%
+#   select(decimalLongitude, decimalLatitude, locality, locationID) %>%
+#   distinct() %>%
+#   st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
+
 stations <- json$stats$samples %>%
   filter(!is.na(decimalLongitude)) %>%
-  mutate(decimalLongitude = round(decimalLongitude, 2), decimalLatitude = round(decimalLatitude, 2)) %>%
-  select(decimalLongitude, decimalLatitude, locality, locationID) %>%
-  distinct() %>%
-  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE)
+  group_by(locationID) %>%
+  summarize(decimalLongitude = first(decimalLongitude), decimalLatitude = first(decimalLatitude)) %>%
+  st_as_sf(coords = c("decimalLongitude", "decimalLatitude"), crs = 4326, remove = FALSE) %>%
+  arrange(locationID)
 ```
 
 \begin{figure}[h]
@@ -207,7 +214,7 @@ More information about the initiative and a press kit are available on the UNESC
 
 ## Sampling and sample processing
 
-eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r length(na.omit(json$stats$samples$locality))` samples were collected at `r nrow(stations)` locations in the park covering different habitats: `r knitr::combine_words(na.omit(unique(json$stats$samples$locationID)))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. DNA from the samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles.
+eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r length(na.omit(json$stats$samples$locality))` samples were collected at `r nrow(stations)` locations in the park covering different habitats: `r knitr::combine_words(sort(na.omit(unique(json$stats$samples$locationID))))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. DNA from the samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles.
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=7, fig.scale=1.2, echo=FALSE, out.width='70%', fig.cap='\\label{fig:map}Map of the sampling locations.', fig.align='center'}
 shapes <- sf::read_sf("marine_world_heritage.gpkg")
