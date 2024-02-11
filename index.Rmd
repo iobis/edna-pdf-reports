@@ -67,7 +67,7 @@ json <- fromJSON(glue("edna-species-lists/lists/json/{params$site_name_simplifie
 json_full <- fromJSON(glue("edna-species-lists/lists_full/json/{params$site_name_simplified}.json"))
 
 sample_stats <- json$stats$samples %>%
-  filter(!is.na(locality)) %>%
+  # filter(!is.na(locality)) %>%
   select(locality, materialSampleID, sampleSize, reads, asvs, species)
 sample_stats_x <- xtable(sample_stats, caption = "Reads, ASVs, and species by sample.", label = "tab:samples")
 # caption(sample_stats_x) <- "\\label{tab:samples}Reads, ASVs, and species by sample."
@@ -214,7 +214,7 @@ More information about the initiative and a press kit are available on the UNESC
 
 ## Sampling and sample processing
 
-eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r length(na.omit(json$stats$samples$locality))` samples were collected at `r nrow(stations)` locations in the park covering different habitats: `r knitr::combine_words(sort(na.omit(unique(json$stats$samples$locationID))))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. DNA from the samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles.
+eDNA sampling was conducted in `r params$site_higherGeography` in `r params$site_date`. A total of `r nrow(json$stats$samples)` samples were collected at `r nrow(stations)` locations in the park covering different habitats: `r knitr::combine_words(sort(na.omit(unique(json$stats$samples$locationID))))` (Figure \ref{fig:map}). Up to \SI{`r max(na.omit(json$stats$samples$sampleSize))`}{\milli\litre} of seawater was filtered through filter cartridges containing a filter with a \SI{0.8}{\micro\metre} pore size. After sampling, the filter cartridges were flushed with preservation liquid and shipped to UNESCO. DNA from the samples was extracted and amplified, and subsequently sent to the sequencing facility at KU Leuven in Belgium, a specialized university eDNA lab contracted by UNESCO for this work. PCR amplification was done using five primer pairs selected to capture as much biodiversity as possible in the target groups of the study: fish, mammals, and turtles.
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=7, fig.scale=1.2, echo=FALSE, out.width='70%', fig.cap='\\label{fig:map}Map of the sampling locations.', fig.align='center'}
 shapes <- sf::read_sf("marine_world_heritage.gpkg")
@@ -250,7 +250,7 @@ possible_groups <- c("molluscs", "worms", "algae", "cnidarians", "sponges", "cru
 example_groups <- groups[groups %in% possible_groups][1:5]
 ```
 
-Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads, from which we collected `r format(json$stats$dna$asvs, big.mark = ",")` unique sequences or ASVs (Tables \ref{tab:dna} and \ref{tab:samples}).
+Sequencing of the DNA from `r nrow(json$stats$samples)` samples resulted in over `r floor(json$stats$dna$reads / 1000000)` million sequence reads, from which we collected `r format(json$stats$dna$asvs, big.mark = ",")` unique sequences or ASVs (Tables \ref{tab:dna} and \ref{tab:samples}).
 
 \input{stats.tex}
 
@@ -258,7 +258,7 @@ Sequencing of the DNA from `r length(na.omit(json$stats$samples$locality))` samp
 
 ## Species identification
 
-The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, including `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` turtle species (Table \ref{tab:groups}). Species from other groups, such as `r knitr::combine_words(example_groups)`, were also detected (Figures \ref{fig:tree} and \ref{fig:groups}). This number of species detected represents about `r found_percentage`% of the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species known from `r params$site_higherGeography` in the OBIS database. Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
+The marker sequences obtained from sequencing were matched with sequence reference databases built using public data available from the National Center for Biotechnology Information (NCBI). This resulted in the identification of `r format(nrow(json$species), big.mark = ",")` species, including `r format(sum(na.omit(json$species$group == "fish")), big.mark = ",")` fish species, `r format(sum(na.omit(json$species$group == "mammals")), big.mark = ",")` mammalian species, and `r format(sum(na.omit(json$species$group == "turtles")), big.mark = ",")` turtle species (Table \ref{tab:groups}). Species from other groups, such as `r knitr::combine_words(example_groups)`, were also detected (Figures \ref{fig:tree} and \ref{fig:groups}). This number of species detected represents about `r found_percentage`% of the `r format(sum(json_full$species$source_gbif | json_full$species$source_obis), big.mark = ",")` species known from `r params$site_higherGeography` in the OBIS database. Of the `r format(nrow(json$species), big.mark = ",")` species detected, `r sum(!(json$species$source_gbif | json$species$source_obis))` are not among the species previously reported from `r params$site_higherGeography` to the UNESCO OBIS database. `r sum(na.omit(json$stats$redlist$edna_species))` of the detected species are listed as threatened on the IUCN Red List (Table \ref{tab:categories}). A full list of species is added at the end of this report.
 
 \input{group_stats.tex}
 \input{category_stats.tex}
